@@ -3,6 +3,7 @@ import { Item } from '@prisma/client';
 import { CreateItemDto } from './dto/create-item-dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ItemStatus } from '@prisma/client';
+
 @Injectable()
 export class ItemsService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -21,7 +22,7 @@ export class ItemsService {
     return found;
   }
 
-  async create(createItemDto: CreateItemDto): Promise<Item> {
+  async create(createItemDto: CreateItemDto, userId: string): Promise<Item> {
     const { name, price, description } = createItemDto;
     return await this.prismaService.item.create({
       data: {
@@ -29,6 +30,7 @@ export class ItemsService {
         price,
         description,
         status: ItemStatus.ON_SALE,
+        userId,
       }
     })
   }
@@ -40,9 +42,14 @@ export class ItemsService {
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string, userId: string) {
     await this.prismaService.item.delete({
-      where: { id },
+      where: {
+        id_userId: {
+          id,
+          userId
+        }
+      },
     });
   }
 }
